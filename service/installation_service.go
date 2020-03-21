@@ -2,12 +2,17 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/v30/github"
 	"github.com/pkg/errors"
+	"gopkg.in/src-d/go-billy.v4/memfs"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 type InstallationService interface {
@@ -32,11 +37,22 @@ func (s installationService) Action(event *github.InstallationEvent) error {
 			return errors.WithStack(err)
 		}
 
-		cli := github.NewClient(&http.Client{Transport: tr})
-		list, _, _ := cli.Apps.ListRepos(context.TODO(), nil)
-		for _, v := range list {
-			log.Println(v.GetFullName())
+		token, err := tr.Token(context.TODO())
+		if err != nil {
+			return errors.WithStack(err)
 		}
+
+		fs := memfs.New()
+		_, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+			URL: fmt.Sprintf("https://x-access-token:%s@github.com/owner/repo.git", token),
+		})
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		file, _ := fs.Open("README.md")
+		b, _ := ioutil.ReadAll(file)
+		log.Println(string(b))
 	default:
 		return errors.New("invalid action")
 	}
