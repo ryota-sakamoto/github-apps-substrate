@@ -25,8 +25,7 @@ func (ca CallbackController) Endpoint(c *gin.RouterGroup) {
 
 func (ca CallbackController) callback(c *gin.Context) {
 	switch c.GetHeader("X-Github-Event") {
-	case "installation":
-	case "installation_repositories":
+	case "installation", "installation_repositories":
 		ca.installation(c)
 	default:
 		c.AbortWithStatus(400)
@@ -37,6 +36,7 @@ func (ca CallbackController) callback(c *gin.Context) {
 func (ca CallbackController) installation(c *gin.Context) {
 	var event github.InstallationEvent
 	if err := c.ShouldBindJSON(&event); err != nil {
+		log.Printf("%+v\n", err)
 		c.AbortWithStatus(400)
 		return
 	}

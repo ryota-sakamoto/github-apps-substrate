@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -37,6 +38,8 @@ func ValidatePayload(key []byte) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusTeapot)
 			return
 		}
+
+		c.Request.Body = ioutil.NopCloser(buf)
 
 		c.Next()
 	}
