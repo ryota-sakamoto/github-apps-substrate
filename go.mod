@@ -3,6 +3,7 @@ module github.com/ryota-sakamoto/github-apps-substrate
 go 1.14
 
 require (
+	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect
