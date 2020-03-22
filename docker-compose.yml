@@ -5,6 +5,7 @@ services:
     image: golang:1.14.1-buster
     tty: true
     environment:
+      GITHUB_APP_ID: 0
       GITHUB_WEBHOOK_SECRET: aiueo
       GITHUB_PRIVATE_KEY: |
         -----BEGIN RSA PRIVATE KEY-----

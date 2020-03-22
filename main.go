@@ -23,7 +23,8 @@ func main() {
 	r.Use(middleware.ValidatePayload([]byte(conf.GitHub.Secret)))
 
 	is := service.NewInstallationService(conf.GitHub.PrivateKey)
-	callback := controller.NewCallbackController(is)
+	ss := service.NewSubscribeService(conf.GitHub.PrivateKey, conf.GitHub.AppID)
+	callback := controller.NewCallbackController(is, ss)
 
 	api := r.Group("/api")
 	{
