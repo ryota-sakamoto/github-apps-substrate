@@ -37,7 +37,7 @@ func (s subscribeService) SubscribePush(event *github.PushEvent) error {
 		return err
 	}
 
-	path, err := s.repositoryRepository.CloneRepository(context.TODO(), event.Installation.GetID(), event.Repo.GetCloneURL(), event.GetRef())
+	_, path, err := s.repositoryRepository.CloneRepository(context.TODO(), event.Installation.GetID(), event.Repo.GetCloneURL(), event.GetRef())
 	if err != nil {
 		return err
 	}

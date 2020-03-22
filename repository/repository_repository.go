@@ -11,11 +11,13 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 
 	"github.com/ryota-sakamoto/github-apps-substrate/model/commit"
+	"github.com/ryota-sakamoto/github-apps-substrate/model/pull"
 	"github.com/ryota-sakamoto/github-apps-substrate/util"
 )
 
 type RepositoryRepository interface {
-	CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (string, error)
+	CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (*git.Repository, string, error)
+	CreatePullRequest(ctx context.Context, installationID int64, req pull.Request) error
 	UpdateCommitStatus(ctx context.Context, installationID int64, us commit.UpdateStatus) error
 }
 
@@ -29,6 +31,53 @@ func NewRepositoryRepository(privateKey string, appID int64) RepositoryRepositor
 type repositoryRepository struct {
 	privateKey []byte
 	appID      int64
+}
+
+func (r repositoryRepository) CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (*git.Repository, string, error) {
+	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
+	if err != nil {
+		return nil, "", err
+	}
+
+	u, err := url.Parse(repositoryURL)
+	if err != nil {
+		return nil, "", errors.WithStack(err)
+	}
+	u.User = url.UserPassword("x-access-token", cli.Token)
+
+	path, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, "", errors.WithStack(err)
+	}
+
+	repo, err := git.PlainCloneContext(ctx, path, false, &git.CloneOptions{
+		URL:           u.String(),
+		ReferenceName: plumbing.ReferenceName(ref),
+	})
+	if err != nil {
+		return nil, "", errors.WithStack(err)
+	}
+
+	return repo, path, nil
+}
+
+func (r repositoryRepository) CreatePullRequest(ctx context.Context, installationID int64, req pull.Request) error {
+	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
+	if err != nil {
+		return err
+	}
+
+	_, _, err = cli.PullRequests.Create(ctx, req.OwnerName, req.RepoName, &github.NewPullRequest{
+		Title: &req.Title,
+		Base:  &req.Base,
+		Head:  &req.Head,
+		Body:  &req.Body,
+	})
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 func (r repositoryRepository) UpdateCommitStatus(ctx context.Context, installationID int64, us commit.UpdateStatus) error {
@@ -52,32 +101,4 @@ func (r repositoryRepository) UpdateCommitStatus(ctx context.Context, installati
 	}
 
 	return nil
-}
-
-func (r repositoryRepository) CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (string, error) {
-	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
-	if err != nil {
-		return "", err
-	}
-
-	u, err := url.Parse(repositoryURL)
-	if err != nil {
-		return "", errors.WithStack(err)
-	}
-	u.User = url.UserPassword("x-access-token", cli.Token)
-
-	path, err := ioutil.TempDir("", "")
-	if err != nil {
-		return "", errors.WithStack(err)
-	}
-
-	_, err = git.PlainCloneContext(ctx, path, false, &git.CloneOptions{
-		URL:           u.String(),
-		ReferenceName: plumbing.ReferenceName(ref),
-	})
-	if err != nil {
-		return "", errors.WithStack(err)
-	}
-
-	return path, nil
 }
