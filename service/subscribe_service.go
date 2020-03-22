@@ -30,6 +30,10 @@ type subscribeService struct {
 }
 
 func (s subscribeService) SubscribePush(event *github.PushEvent) error {
+	if *event.Deleted {
+		return nil
+	}
+
 	err := s.repositoryRepository.UpdateCommitStatus(context.TODO(), event.Installation.GetID(), commit.UpdateStatus{
 		CommitID:    event.HeadCommit.GetID(),
 		OwnerName:   event.Repo.Owner.GetName(),
