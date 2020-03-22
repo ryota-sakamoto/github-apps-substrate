@@ -11,11 +11,6 @@ type Config struct {
 		Secret     string `required:"true" envconfig:"GITHUB_WEBHOOK_SECRET"`
 		PrivateKey string `required:"true" envconfig:"GITHUB_PRIVATE_KEY"`
 	}
-	DB struct {
-		Host     string `required:"true" envconfig:"DB_HOST"`
-		User     string `required:"true" envconfig:"DB_USER"`
-		Password string `required:"true" envconfig:"DB_PASSWORD"`
-	}
 }
 
 func GetConfig() (*Config, error) {

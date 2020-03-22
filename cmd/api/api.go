@@ -22,10 +22,9 @@ func main() {
 
 	r := gin.Default()
 
-	is := service.NewInstallationService(conf.GitHub.PrivateKey)
 	rr := repository.NewRepositoryRepository(conf.GitHub.PrivateKey, conf.GitHub.AppID)
 	ss := service.NewSubscribeService(rr)
-	callback := controller.NewCallbackController(is, ss)
+	callback := controller.NewCallbackController(ss)
 
 	api := r.Group("/api")
 	api.Use(middleware.ValidatePayload([]byte(conf.GitHub.Secret)))

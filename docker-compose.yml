@@ -10,22 +10,11 @@ services:
       GITHUB_PRIVATE_KEY: |
         -----BEGIN RSA PRIVATE KEY-----
         -----END RSA PRIVATE KEY-----
-      DB_HOST: db:3306
-      DB_USER: substrate_user
-      DB_PASSWORD: substrate_password
     working_dir: /src
     volumes:
       - .:/src
     ports:
       - 8080:8080
-
-  db:
-    image: mysql:8.0.16
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: substrate
-      MYSQL_USER: substrate_user
-      MYSQL_PASSWORD: substrate_password
 
   expose:
     image: wernight/ngrok:latest
