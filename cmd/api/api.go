@@ -21,7 +21,6 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Use(middleware.ValidatePayload([]byte(conf.GitHub.Secret)))
 
 	is := service.NewInstallationService(conf.GitHub.PrivateKey)
 	rr := repository.NewRepositoryRepository(conf.GitHub.PrivateKey, conf.GitHub.AppID)
@@ -29,6 +28,7 @@ func main() {
 	callback := controller.NewCallbackController(is, ss)
 
 	api := r.Group("/api")
+	api.Use(middleware.ValidatePayload([]byte(conf.GitHub.Secret)))
 	{
 		callback.Endpoint(api)
 	}
