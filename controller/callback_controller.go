@@ -26,33 +26,33 @@ func (ca CallbackController) Endpoint(c *gin.RouterGroup) {
 }
 
 func (ca CallbackController) callback(c *gin.Context) {
-	var event interface{}
-	var hook func() error
+	var err error
+
 	switch c.GetHeader("X-Github-Event") {
 	case "installation", "installation_repositories":
-		event = github.InstallationEvent{}
-		hook = func() error {
-			e := event.(github.InstallationEvent)
-			return ca.installationService.Action(&e)
+		var event github.InstallationEvent
+		if err := c.ShouldBindJSON(&event); err != nil {
+			log.Printf("%+v\n", err)
+			c.AbortWithStatus(400)
+			return
 		}
+
+		err = ca.installationService.Action(&event)
 	case "push":
-		event = github.PushEvent{}
-		hook = func() error {
-			e := event.(github.PushEvent)
-			return ca.subscribeService.SubscribePush(&e)
+		var event github.PushEvent
+		if err := c.ShouldBindJSON(&event); err != nil {
+			log.Printf("%+v\n", err)
+			c.AbortWithStatus(400)
+			return
 		}
+
+		err = ca.subscribeService.SubscribePush(&event)
 	default:
 		c.AbortWithStatus(400)
 		return
 	}
 
-	if err := c.ShouldBindJSON(&event); err != nil {
-		log.Printf("%+v\n", err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	if err := hook(); err != nil {
+	if err != nil {
 		log.Printf("%+v\n", err)
 		c.AbortWithStatus(500)
 		return

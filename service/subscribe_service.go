@@ -2,16 +2,15 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/v30/github"
 	"github.com/pkg/errors"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
@@ -42,17 +41,21 @@ func (s subscribeService) SubscribePush(event *github.PushEvent) error {
 		return errors.WithStack(err)
 	}
 
-	fs := memfs.New()
-	_, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
-		URL: fmt.Sprintf("https://x-access-token:%s@github.com/owner/repo.git", token),
-	})
+	u, err := url.Parse(event.Repo.GetCloneURL())
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	file, _ := fs.Open("README.md")
-	b, _ := ioutil.ReadAll(file)
-	log.Println(string(b))
+	u.User = url.UserPassword("x-access-token", token)
+
+	fs := memfs.New()
+	_, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
+		URL:           u.String(),
+		ReferenceName: plumbing.ReferenceName(event.GetRef()),
+	})
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	return nil
 }
