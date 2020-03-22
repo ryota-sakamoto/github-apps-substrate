@@ -26,3 +26,9 @@ services:
       MYSQL_DATABASE: substrate
       MYSQL_USER: substrate_user
       MYSQL_PASSWORD: substrate_password
+
+  expose:
+    image: wernight/ngrok:latest
+    command: ngrok http api:8080
+    ports:
+      - 4040:4040
