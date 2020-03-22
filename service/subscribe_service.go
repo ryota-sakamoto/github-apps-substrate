@@ -2,60 +2,47 @@ package service
 
 import (
 	"context"
-	"net/http"
-	"net/url"
+	"log"
 
-	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/v30/github"
-	"github.com/pkg/errors"
-	"gopkg.in/src-d/go-billy.v4/memfs"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
+
+	"github.com/ryota-sakamoto/github-apps-substrate/model/commit"
+	"github.com/ryota-sakamoto/github-apps-substrate/repository"
 )
 
 type SubscribeService interface {
 	SubscribePush(event *github.PushEvent) error
 }
 
-func NewSubscribeService(privateKey string, appID int64) SubscribeService {
+func NewSubscribeService(repositoryRepository repository.RepositoryRepository) SubscribeService {
 	return subscribeService{
-		privateKey: privateKey,
-		appID:      appID,
+		repositoryRepository: repositoryRepository,
 	}
 }
 
 type subscribeService struct {
-	privateKey string
-	appID      int64
+	repositoryRepository repository.RepositoryRepository
 }
 
 func (s subscribeService) SubscribePush(event *github.PushEvent) error {
-	tr, err := ghinstallation.New(http.DefaultTransport, s.appID, event.Installation.GetID(), []byte(s.privateKey))
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	token, err := tr.Token(context.TODO())
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	u, err := url.Parse(event.Repo.GetCloneURL())
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	u.User = url.UserPassword("x-access-token", token)
-
-	fs := memfs.New()
-	_, err = git.Clone(memory.NewStorage(), fs, &git.CloneOptions{
-		URL:           u.String(),
-		ReferenceName: plumbing.ReferenceName(event.GetRef()),
+	err := s.repositoryRepository.UpdateCommitStatus(context.TODO(), event.Installation.GetID(), commit.UpdateStatus{
+		CommitID:    event.HeadCommit.GetID(),
+		OwnerName:   event.Repo.Owner.GetName(),
+		RepoName:    event.Repo.GetName(),
+		Label:       "GitHub Apps",
+		Description: "wait",
+		Status:      commit.COMMIT_STATUS_PENDING,
 	})
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
+
+	path, err := s.repositoryRepository.CloneRepository(context.TODO(), event.Installation.GetID(), event.Repo.GetCloneURL(), event.GetRef())
+	if err != nil {
+		return err
+	}
+
+	log.Println(path)
 
 	return nil
 }
