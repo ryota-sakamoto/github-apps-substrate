@@ -6,10 +6,15 @@ import (
 )
 
 type Config struct {
+	Server struct {
+		Port int `envconfig:"PORT"`
+	}
 	GitHub struct {
-		AppID      int64  `required:"true" envconfig:"GITHUB_APP_ID"`
-		Secret     string `required:"true" envconfig:"GITHUB_WEBHOOK_SECRET"`
-		PrivateKey string `required:"true" envconfig:"GITHUB_PRIVATE_KEY"`
+		AppID               int64  `required:"true" envconfig:"GITHUB_APP_ID"`
+		Secret              string `required:"true" envconfig:"GITHUB_WEBHOOK_SECRET"`
+		PrivateKey          string `required:"true" envconfig:"GITHUB_PRIVATE_KEY"`
+		EnterpriseURL       string `envconfig:"GITHUB_ENTERPRISE_URL"`
+		EnterpriseUploadURL string `envconfig:"GITHUB_ENTERPRISE_UPLOAD_URL"`
 	}
 }
 

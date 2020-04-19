@@ -5,8 +5,11 @@ services:
     image: golang:1.14.1-buster
     tty: true
     environment:
+      PORT: 8080
       GITHUB_APP_ID: 0
       GITHUB_WEBHOOK_SECRET: aiueo
+      GITHUB_ENTERPRISE_URL: ""
+      GITHUB_ENTERPRISE_UPLOAD_URL: ""
       GITHUB_PRIVATE_KEY: |
         -----BEGIN RSA PRIVATE KEY-----
         -----END RSA PRIVATE KEY-----

@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -17,7 +22,6 @@ func main() {
 	conf, err := config.GetConfig()
 	if err != nil {
 		log.Fatalf("%+v\n", err)
-		os.Exit(1)
 	}
 
 	r := gin.Default()
@@ -32,5 +36,32 @@ func main() {
 		callback.Endpoint(api)
 	}
 
-	r.Run(":8080")
+	port := 8080
+	if conf.Server.Port != 0 {
+		port = conf.Server.Port
+	}
+
+	srv := http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatalf("%+v\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("shutdown server")
+
+	ctx, cannel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cannel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("%+v\n", err)
+	}
+
+	log.Println("shutdown success")
 }
