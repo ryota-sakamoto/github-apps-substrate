@@ -1,4 +1,4 @@
-package controller
+package handler
 
 import (
 	"log"
@@ -7,24 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v30/github"
 
-	"github.com/ryota-sakamoto/github-apps-substrate/service"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/service"
 )
 
-type CallbackController struct {
+type CallbackHandler struct {
 	subscribeService service.SubscribeService
 }
 
-func NewCallbackController(ss service.SubscribeService) CallbackController {
-	return CallbackController{
+func NewCallbackHandler(ss service.SubscribeService) CallbackHandler {
+	return CallbackHandler{
 		subscribeService: ss,
 	}
 }
 
-func (ca CallbackController) Endpoint(c *gin.RouterGroup) {
+func (ca CallbackHandler) Endpoint(c *gin.RouterGroup) {
 	c.POST("/callback", ca.callback)
 }
 
-func (ca CallbackController) callback(c *gin.Context) {
+func (ca CallbackHandler) callback(c *gin.Context) {
 	var err error
 
 	switch c.GetHeader("X-Github-Event") {

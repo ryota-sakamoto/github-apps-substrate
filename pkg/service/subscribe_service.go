@@ -8,8 +8,8 @@ import (
 	// "gopkg.in/src-d/go-git.v4"
 	// "gopkg.in/src-d/go-git.v4/plumbing"
 
-	"github.com/ryota-sakamoto/github-apps-substrate/model/commit"
-	"github.com/ryota-sakamoto/github-apps-substrate/repository"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/model/commit"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/repository"
 )
 
 type SubscribeService interface {

@@ -6,11 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ryota-sakamoto/github-apps-substrate/config"
-	"github.com/ryota-sakamoto/github-apps-substrate/controller"
-	"github.com/ryota-sakamoto/github-apps-substrate/middleware"
-	"github.com/ryota-sakamoto/github-apps-substrate/repository"
-	"github.com/ryota-sakamoto/github-apps-substrate/service"
+	"github.com/ryota-sakamoto/github-apps-substrate/internal/config"
+	"github.com/ryota-sakamoto/github-apps-substrate/internal/handler"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/middleware"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/repository"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/service"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 	rr := repository.NewRepositoryRepository(conf.GitHub.PrivateKey, conf.GitHub.AppID)
 	ss := service.NewSubscribeService(rr)
-	callback := controller.NewCallbackController(ss)
+	callback := handler.NewCallbackHandler(ss)
 
 	api := r.Group("/api")
 	api.Use(middleware.ValidatePayload([]byte(conf.GitHub.Secret)))

@@ -10,9 +10,9 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 
-	"github.com/ryota-sakamoto/github-apps-substrate/model/commit"
-	"github.com/ryota-sakamoto/github-apps-substrate/model/pull"
-	"github.com/ryota-sakamoto/github-apps-substrate/util"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/client"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/model/commit"
+	"github.com/ryota-sakamoto/github-apps-substrate/pkg/model/pull"
 )
 
 type RepositoryRepository interface {
@@ -34,7 +34,7 @@ type repositoryRepository struct {
 }
 
 func (r repositoryRepository) CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (*git.Repository, string, error) {
-	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -62,7 +62,7 @@ func (r repositoryRepository) CloneRepository(ctx context.Context, installationI
 }
 
 func (r repositoryRepository) CreatePullRequest(ctx context.Context, installationID int64, req pull.Request) error {
-	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (r repositoryRepository) CreatePullRequest(ctx context.Context, installatio
 }
 
 func (r repositoryRepository) UpdateCommitStatus(ctx context.Context, installationID int64, us commit.UpdateStatus) error {
-	cli, err := util.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
 	if err != nil {
 		return err
 	}
