@@ -1,7 +1,22 @@
 github-apps-substrate
 ===
 
-This is experimental.
+This repository is a reference implementation of GitHub Apps.  
+The aim is to enable GitOps in CI/CD.
+
+## Required Perimssions
+
+### Repository permissions
+
+- Contents: Read & Write
+- Metadata: Read-only
+- Pull requests: Read & Write
+- Commit statuses: Read & Write
+
+### Subscribe to events
+
+- Push
+- Status
 
 ## develop
 
