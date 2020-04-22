@@ -21,20 +21,24 @@ type RepositoryRepository interface {
 	UpdateCommitStatus(ctx context.Context, installationID int64, us commit.UpdateStatus) error
 }
 
-func NewRepositoryRepository(privateKey string, appID int64) RepositoryRepository {
+func NewRepositoryRepository(baseURL, uploadURL, privateKey string, appID int64) RepositoryRepository {
 	return repositoryRepository{
 		privateKey: []byte(privateKey),
 		appID:      appID,
+		baseURL:    baseURL,
+		uploadURL:  uploadURL,
 	}
 }
 
 type repositoryRepository struct {
 	privateKey []byte
 	appID      int64
+	baseURL    string
+	uploadURL  string
 }
 
 func (r repositoryRepository) CloneRepository(ctx context.Context, installationID int64, repositoryURL, ref string) (*git.Repository, string, error) {
-	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.baseURL, r.uploadURL, r.appID, installationID, r.privateKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -62,7 +66,7 @@ func (r repositoryRepository) CloneRepository(ctx context.Context, installationI
 }
 
 func (r repositoryRepository) CreatePullRequest(ctx context.Context, installationID int64, req pull.Request) error {
-	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.baseURL, r.uploadURL, r.appID, installationID, r.privateKey)
 	if err != nil {
 		return err
 	}
@@ -81,7 +85,7 @@ func (r repositoryRepository) CreatePullRequest(ctx context.Context, installatio
 }
 
 func (r repositoryRepository) UpdateCommitStatus(ctx context.Context, installationID int64, us commit.UpdateStatus) error {
-	cli, err := client.NewGitHubClient(r.appID, installationID, r.privateKey)
+	cli, err := client.NewGitHubClient(r.baseURL, r.uploadURL, r.appID, installationID, r.privateKey)
 	if err != nil {
 		return err
 	}

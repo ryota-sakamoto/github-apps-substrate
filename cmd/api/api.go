@@ -26,7 +26,7 @@ func main() {
 
 	r := gin.Default()
 
-	rr := repository.NewRepositoryRepository(conf.GitHub.PrivateKey, conf.GitHub.AppID)
+	rr := repository.NewRepositoryRepository(conf.GitHub.EnterpriseURL, conf.GitHub.EnterpriseUploadURL, conf.GitHub.PrivateKey, conf.GitHub.AppID)
 	ss := service.NewSubscribeService(rr)
 	callback := handler.NewCallbackHandler(ss)
 
