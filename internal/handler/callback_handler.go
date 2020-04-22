@@ -28,6 +28,9 @@ func (ca CallbackHandler) callback(c *gin.Context) {
 	var err error
 
 	switch c.GetHeader("X-Github-Event") {
+	case "ping":
+		log.Println("pong")
+		return
 	case "push":
 		var event github.PushEvent
 		if err := c.ShouldBindJSON(&event); err != nil {
