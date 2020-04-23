@@ -72,7 +72,7 @@ func (s subscribeService) SubscribePush(event *github.PushEvent) error {
 		return err
 	}
 
-	repo, path, err := s.repositoryRepository.CloneRepository(context.TODO(), event.Installation.GetID(), manifestRepositoryURL.cloneURL, event.GetRef())
+	repo, path, err := s.repositoryRepository.CloneRepository(context.TODO(), event.Installation.GetID(), manifestRepositoryURL.cloneURL, "refs/heads/develop")
 	if err != nil {
 		return err
 	}
@@ -103,6 +103,7 @@ func (s subscribeService) SubscribePush(event *github.PushEvent) error {
 			Author: &object.Signature{
 				Name:  "github-actions[bot]",
 				Email: "41898282+github-actions[bot]@users.noreply.github.com",
+				When:  time.Now(),
 			},
 		})
 
@@ -112,10 +113,12 @@ func (s subscribeService) SubscribePush(event *github.PushEvent) error {
 		}
 
 		err = s.repositoryRepository.CreatePullRequest(context.TODO(), event.Installation.GetID(), pull.Request{
-			Title: "update commit hash",
-			Base:  "develop",
-			Head:  newBranch,
-			Body:  "update",
+			OwnerName: manifestRepositoryURL.owner,
+			RepoName:  manifestRepositoryURL.name,
+			Title:     "update commit hash",
+			Base:      "develop",
+			Head:      newBranch,
+			Body:      "update",
 		})
 		if err != nil {
 			log.Printf("%+v\n", err)
