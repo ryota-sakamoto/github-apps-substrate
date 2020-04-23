@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"net/http"
-	"net/url"
 
 	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/v30/github"
@@ -20,24 +19,23 @@ func NewGitHubClient(baseURL, uploadURL string, appID, installationID int64, pri
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	if baseURL != "" && uploadURL != "" {
+		tr.BaseURL = baseURL
+	}
 
 	token, err := tr.Token(context.TODO())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	cli := github.NewClient(&http.Client{Transport: tr})
-
+	var cli *github.Client
 	if baseURL != "" && uploadURL != "" {
-		cli.BaseURL, err = url.Parse(baseURL)
+		cli, err = github.NewEnterpriseClient(baseURL, uploadURL, &http.Client{Transport: tr})
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-
-		cli.UploadURL, err = url.Parse(uploadURL)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
+	} else {
+		cli = github.NewClient(&http.Client{Transport: tr})
 	}
 
 	return &GitHubClient{
